@@ -1057,3 +1057,21 @@ header {
     align-self: flex-end;
   }
 }
+.project-thumb {
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+  border: 1px solid var(--border-soft);
+  background: #020617;
+}
+
+:root[data-theme="light"] .project-thumb {
+  background: #f3f4f6;
+}
+
+.project-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
