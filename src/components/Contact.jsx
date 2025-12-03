@@ -1,5 +1,64 @@
 // src/components/Contact.jsx
+import { useState } from "react";
+
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/myzrjono";
+
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [status, setStatus] = useState("");
+  const [statusType, setStatusType] = useState(""); // "success" | "error"
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setStatus("");
+    setStatusType("");
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setStatus("");
+    setStatusType("");
+
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
+
+      if (response.ok) {
+        setStatus("Thank you! Your message has been sent successfully.");
+        setStatusType("success");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        setStatus("Something went wrong. Please try again in a moment.");
+        setStatusType("error");
+      }
+    } catch (err) {
+      setStatus("Network error. Please check your connection and try again.");
+      setStatusType("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="section">
       <div className="section-header">
@@ -82,23 +141,25 @@ export default function Contact() {
           </div>
         </div>
 
-        {/* Right: simple message box */}
+        {/* Right: working Formspree form */}
         <div className="contact-card contact-form">
           <h3 className="contact-title">Quick message</h3>
           <p className="contact-text">
-            This is a simple UI-only form. You can later hook it to a backend or
-            a service like Formspree or EmailJS.
+            This form sends your message using Formspree. I&apos;ll get back to
+            you as soon as I can.
           </p>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("This is a demo form. Connect it to a service later 🙂");
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             <div className="field">
               <label htmlFor="name">Name</label>
-              <input id="name" type="text" placeholder="Your name" required />
+              <input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="field">
@@ -108,6 +169,8 @@ export default function Contact() {
                 type="email"
                 placeholder="you@example.com"
                 required
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -118,12 +181,28 @@ export default function Contact() {
                 rows="4"
                 placeholder="Tell me a bit about what you have in mind..."
                 required
+                value={formData.message}
+                onChange={handleChange}
               ></textarea>
             </div>
 
-            <button type="submit" className="btn-pill contact-btn">
-              Send Message
+            <button
+              type="submit"
+              className="btn-pill contact-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Sending..." : "Send Message"}
             </button>
+
+            {status && (
+              <p
+                className={`contact-status ${
+                  statusType === "error" ? "contact-status-error" : ""
+                }`}
+              >
+                {status}
+              </p>
+            )}
           </form>
         </div>
       </div>
